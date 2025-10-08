@@ -1,7 +1,7 @@
 import argparse
 from pathlib import Path
-from suffcal.media.handler import init_handler
-from suffcal.media.data_extractor import extract_latest_text
+from suffcal.handler import init_media_handler, get_media_handler
+from suffcal.extractor import Extractor
 
 
 def main():
@@ -18,23 +18,25 @@ def main():
     args.add_argument(
         "--update-interval",
         type=int,
-        default=60,
-        help="Interval in minutes to check for new posts (default: 60)",
+        default=120,
+        help="Interval in minutes to check for new posts (default: 120)",
     )
     parsed_args = args.parse_args()
 
-    init_handler(
+    init_media_handler(
         parsed_args.download_path,
         parsed_args.target_user,
         parsed_args.user,
         parsed_args.password,
+        update_interval=parsed_args.update_interval,
+        no_auto_update=True,
     )
 
-    for i, text in enumerate(extract_latest_text()):
-        print("Extracted Text:", text)
-        print("-" * 20)
-
-        Path(f"{i}-out.txt").write_text(text)
+    processedPhotos = get_media_handler()._get_processed_photos()
+    extractor = Extractor()
+    for photo in processedPhotos:
+        event = extractor.extract(photo.path)
+        print(event)
 
 
 if __name__ == "__main__":

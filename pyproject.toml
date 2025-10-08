@@ -3,12 +3,26 @@ name = "suffcal"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.13"
 dependencies = [
+    "de-core-news-lg",
+    "de-dep-news-trf",
     "instagrapi>=2.2.1",
-    "pillow>=11.3.0",
-    "pytesseract>=0.3.13",
+    "llama-cpp-python>=0.3.16",
+    "paddleocr[doc-parser,ie]>=3.2.0",
+    "paddlepaddle>=3.2.0",
+    "transformers>=4.56.2",
 ]
+
+[tool.uv.sources]
+paddlepaddle = { index = "paddlepaddle" }
+de-core-news-lg = { url = "https://github.com/explosion/spacy-models/releases/download/de_core_news_lg-3.8.0/de_core_news_lg-3.8.0-py3-none-any.whl" }
+de-dep-news-trf = { url = "https://github.com/explosion/spacy-models/releases/download/de_dep_news_trf-3.8.0/de_dep_news_trf-3.8.0-py3-none-any.whl" }
+
+[[tool.uv.index]]
+name = "paddlepaddle"
+url = "https://www.paddlepaddle.org.cn/packages/stable/cpu/"
+explicit = true
 
 [dependency-groups]
 dev = [
