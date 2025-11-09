@@ -5,6 +5,7 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "caldav>=2.0.1",
     "de-core-news-lg",
     "de-dep-news-trf",
     "instagrapi>=2.2.1",
