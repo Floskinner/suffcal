@@ -15,6 +15,9 @@ dependencies = [
     "transformers>=4.56.2",
 ]
 
+[project.scripts]
+suffcal = "suffcal.__main__:main"
+
 [tool.uv.sources]
 paddlepaddle = { index = "paddlepaddle" }
 de-core-news-lg = { url = "https://github.com/explosion/spacy-models/releases/download/de_core_news_lg-3.8.0/de_core_news_lg-3.8.0-py3-none-any.whl" }
@@ -24,6 +27,16 @@ de-dep-news-trf = { url = "https://github.com/explosion/spacy-models/releases/do
 name = "paddlepaddle"
 url = "https://www.paddlepaddle.org.cn/packages/stable/cpu/"
 explicit = true
+
+[tool.uv]
+package = true
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["suffcal"]
 
 [dependency-groups]
 dev = [

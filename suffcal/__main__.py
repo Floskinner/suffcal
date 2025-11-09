@@ -22,6 +22,9 @@ def main():
         "Instagram Settings", "All needed settings for instagramm"
     )
     calendar_group = parser.add_argument_group("Calendar Settings")
+    cache_group = parser.add_argument_group(
+        "Cache Settings - Hint for paddle ocr: You have to set PADDLE_OCR_BASE_DIR environment variable accordingly"
+    )
 
     # Add Instagram related arguments to insta_group
     insta_group.add_argument(
@@ -42,9 +45,20 @@ def main():
     calendar_group.add_argument("--calendar-url", help="Calendar URL")
     calendar_group.add_argument("--calendar-name", help="Calendar name to update")
 
+    cache_group.add_argument(
+        "--model-cache-path",
+        help="Path to cache directory for downloaded models",
+        default="./downloads/models",
+    )
+    cache_group.add_argument(
+        "--insta-cache-path",
+        help="Path to cache directory for instagram data",
+        default="./downloads/instagram",
+    )
+
     parsed_args = parser.parse_args()
 
-    extractor = Extractor()
+    extractor = Extractor(mistral_models_folder=parsed_args.model_cache_path)
 
     if parsed_args.init:
         print("Exit after init the AI Extractor class")
