@@ -45,6 +45,7 @@ class MediaHandler:
             user (str): The username of the Instagram account to log in with.
             password (str): The password of the Instagram account to log in with.
             update_interval (timedelta, optional): The interval at which to check for new posts.
+            no_auto_update (bool, optional): If true, does not start the automatic update proccess for pulling images
         """
         self.client = Client()
         self.client.login(user, password)
@@ -62,6 +63,8 @@ class MediaHandler:
         self._stop_event = threading.Event()
         self._stop_event.clear()
 
+        # Update the post once at creation to be up-to-date
+        self.update_posts()
         self.update_thread = threading.Thread(
             target=self._update_worker,
             name=f"{__name__}:update_worker",
@@ -76,14 +79,12 @@ class MediaHandler:
         self.client.logout()
 
     def get_photos_since_last_check(self) -> list[DownloadedPhoto]:
-        """Photos will automatically be marked as processed after being returned.
+        """Photos are not marked as processed after being returned!
 
         Returns:
             list[DownloadedPhoto]: A list of unprocessed photos.
         """
         photos = self._get_unprocessed_photos()
-        for photo in photos:
-            self._mark_photo_as_processed(photo)
         return photos
 
     def add_on_new_photo_callback(
@@ -98,7 +99,7 @@ class MediaHandler:
 
         def marked_wrapper(photo: DownloadedPhoto):
             result = callback(photo)
-            self._mark_photo_as_processed(photo)
+            self.mark_photo_as_processed(photo)
             return result
 
         self._on_new_photo_callback.append(marked_wrapper)
@@ -128,7 +129,8 @@ class MediaHandler:
                 self.client.photo_download(post.pk, folder=self.new_photos_dir)
                 counter += 1
 
-    def _mark_photo_as_processed(self, photo: DownloadedPhoto) -> None:
+    def mark_photo_as_processed(self, photo: DownloadedPhoto) -> None:
+        """This photo is marked as proccessed and can be delete in the future during some cleanup jobs"""
         photo.path.rename(self.processed_photos_dir / photo.path.name)
 
     def _get_unprocessed_photos(
