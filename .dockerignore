@@ -1,0 +1,5 @@
+.venv
+downloads
+.ruff_cache
+.git
+.env
