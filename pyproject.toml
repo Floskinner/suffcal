@@ -12,6 +12,10 @@ dependencies = [
     "llama-cpp-python>=0.3.16",
     "paddleocr[doc-parser,ie]>=3.2.0",
     "paddlepaddle>=3.2.0",
+    # Force CPU-only PyTorch stack (avoid pulling CUDA wheels via transitive deps)
+    # Pin torch/torchvision with +cpu build tags to prevent GPU variant resolution.
+    # NOTE: uv respects index mapping below; explicit spec ensures smaller footprint.
+    "torch==2.9+cpu",
     "transformers>=4.56.2",
 ]
 
@@ -22,10 +26,17 @@ suffcal = "suffcal.__main__:main"
 paddlepaddle = { index = "paddlepaddle" }
 de-core-news-lg = { url = "https://github.com/explosion/spacy-models/releases/download/de_core_news_lg-3.8.0/de_core_news_lg-3.8.0-py3-none-any.whl" }
 de-dep-news-trf = { url = "https://github.com/explosion/spacy-models/releases/download/de_dep_news_trf-3.8.0/de_dep_news_trf-3.8.0-py3-none-any.whl" }
+torch = { index = "pytorch-cpu" }
+torchvision = { index = "pytorch-cpu" }
 
 [[tool.uv.index]]
 name = "paddlepaddle"
 url = "https://www.paddlepaddle.org.cn/packages/stable/cpu/"
+explicit = true
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
 explicit = true
 
 [tool.uv]
