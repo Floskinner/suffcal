@@ -191,6 +191,7 @@ class Extractor:
             except Exception as e:
                 print(f"Unable to do COR: {e}")
                 raise e
+        raise RuntimeError("OCR pipeline returned no outputs")
 
     def ask_llm(self, text: str) -> str:
         # Use lower temperature and a reasonable token budget to reduce

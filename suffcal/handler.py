@@ -4,7 +4,6 @@ from collections.abc import Callable
 from instagrapi import Client
 from datetime import timedelta
 import threading
-import time
 
 from suffcal.media_types import MediaType
 
@@ -129,9 +128,23 @@ class MediaHandler:
                 self.client.photo_download(post.pk, folder=self.new_photos_dir)
                 counter += 1
 
+        if counter > 0:
+            self.trigger_new_photo_callbacks()
+
     def mark_photo_as_processed(self, photo: DownloadedPhoto) -> None:
         """This photo is marked as proccessed and can be delete in the future during some cleanup jobs"""
         photo.path.rename(self.processed_photos_dir / photo.path.name)
+
+    def trigger_new_photo_callbacks(self) -> None:
+        """Triggers all registered callbacks for new photos."""
+        for photo in self._get_unprocessed_photos():
+            for callback in self._on_new_photo_callback:
+                callback(photo)
+
+    def stop_worker(self) -> None:
+        """Stops the background update worker thread."""
+        self._stop_event.set()
+        self.update_thread.join(timeout=5)
 
     def _get_unprocessed_photos(
         self, amount: Optional[int] = None
@@ -160,7 +173,7 @@ class MediaHandler:
         Should be run in a separate thread."""
         while not self._stop_event.is_set():
             self.update_posts()
-            time.sleep(interval.total_seconds())
+            self._stop_event.wait(interval.total_seconds())
 
 
 # Singleton pattern

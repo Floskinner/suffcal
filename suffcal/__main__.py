@@ -1,10 +1,19 @@
 import argparse
 import os
+import signal
 from datetime import timedelta
 from suffcal.handler import init_media_handler, get_media_handler
 from suffcal.extractor import Extractor
 from suffcal.remote_cal import RemoteCal
 from suffcal.handler import DownloadedPhoto
+
+
+def sigint_handler(signum, frame):
+    print("SIGINT received, shutting down...")
+    handler = get_media_handler()
+    handler.stop_worker()
+    print("Shutdown complete.")
+    exit(0)
 
 
 def main():
@@ -141,7 +150,18 @@ def main():
             print(event)
             calendar.addEvent(event)
 
+    signal.signal(signal.SIGINT, sigint_handler)
+
     get_media_handler().add_on_new_photo_callback(on_new_photo)
+    get_media_handler().trigger_new_photo_callbacks()
+
+    # Keep the main thread alive to allow background updates
+    print("Suffcal is running. Press Ctrl+C to exit.")
+    try:
+        signal.pause()
+    except KeyboardInterrupt:
+        sigint_handler(signal.SIGINT, None)
+    return 0
 
 
 if __name__ == "__main__":
