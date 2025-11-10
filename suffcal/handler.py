@@ -51,7 +51,7 @@ class MediaHandler:
         self.client.login(user, password)
         self.user_id = self.client.user_id_from_username(target_user)
 
-        self.download_path = download_path
+        self.download_path = Path(download_path)
         self.new_photos_dir = self.download_path / "new_photos"
         self.processed_photos_dir = self.download_path / "processed_photos"
 

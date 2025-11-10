@@ -1,5 +1,6 @@
 import argparse
 import os
+from datetime import timedelta
 from suffcal.handler import init_media_handler, get_media_handler
 from suffcal.extractor import Extractor
 from suffcal.remote_cal import RemoteCal
@@ -28,15 +29,15 @@ def main():
 
     # Add Instagram related arguments to insta_group
     insta_group.add_argument(
-        "--insta-download-path", help="Path where instagram images will be downloaded"
-    )
-    insta_group.add_argument(
         "--insta-target-user", help="Target instagram user to scan posts from"
     )
     insta_group.add_argument("--insta-user", help="Instagram login user")
     insta_group.add_argument("--insta-password", help="Instagram login password")
     insta_group.add_argument(
-        "--update-interval", type=int, help="Interval in seconds between updates"
+        "--update-interval",
+        type=int,
+        help="Interval in minutes between updates",
+        default=240,
     )
 
     # Add Calendar related arguments to calendar_group
@@ -58,39 +59,78 @@ def main():
 
     parsed_args = parser.parse_args()
 
-    extractor = Extractor(mistral_models_folder=parsed_args.model_cache_path)
+    # Helper to choose CLI arg or environment variable
+    def arg_or_env(arg_value, env_key):
+        return arg_value if arg_value is not None else os.environ.get(env_key)
+
+    # Resolve all inputs (Environment variable names documented here for clarity)
+    insta_target_user = arg_or_env(parsed_args.insta_target_user, "INSTA_TARGET_USER")
+    insta_user = arg_or_env(parsed_args.insta_user, "INSTA_USER")
+    insta_password = arg_or_env(parsed_args.insta_password, "INSTA_PASSWORD")
+    insta_update_interval = arg_or_env(
+        parsed_args.update_interval, "INSTA_UPDATE_INTERVAL"
+    )
+
+    calendar_user = arg_or_env(parsed_args.calendar_user, "CALENDAR_USER")
+    calendar_password = arg_or_env(parsed_args.calendar_password, "CALENDAR_PASSWORD")
+    calendar_url = arg_or_env(parsed_args.calendar_url, "CALENDAR_URL")
+    calendar_name = arg_or_env(parsed_args.calendar_name, "CALENDAR_NAME")
+
+    model_cache_path = arg_or_env(parsed_args.model_cache_path, "MODEL_CACHE_PATH")
+    insta_cache_path = arg_or_env(parsed_args.insta_cache_path, "INSTA_CACHE_PATH")
+
+    # Convert update interval seconds (int) to timedelta; fallback to default (4h)
+    try:
+        update_interval_td = timedelta(minutes=int(insta_update_interval))
+    except (ValueError, TypeError):
+        print(
+            f"Invalid update interval '{insta_update_interval}' provided; falling back to 240 minutes"
+        )
+        update_interval_td = timedelta(minutes=240)
+
+    # TODO: check if all required params are provided
+    def check_required(param, name):
+        if param is None:
+            raise ValueError(f"Missing required parameter: {name}")
+
+    # Check required insta params
+    check_required(insta_target_user, "insta_target_user")
+    check_required(insta_user, "insta_user")
+    check_required(insta_password, "insta_password")
+    check_required(update_interval_td, "update_interval")
+    # Check required calendar params
+    check_required(calendar_user, "calendar_user")
+    check_required(calendar_password, "calendar_password")
+    check_required(calendar_url, "calendar_url")
+    check_required(calendar_name, "calendar_name")
+    # Check required cache params
+    check_required(insta_cache_path, "insta_cache_path")
+    check_required(model_cache_path, "model_cache_path")
+
+    extractor = Extractor(mistral_models_folder=model_cache_path)
 
     if parsed_args.init:
         print("Exit after init the AI Extractor class")
         return 0
 
-    # prefer explicit args; fall back to environment variables
-    insta_user = parsed_args.insta_user or os.environ.get("INSTA_USER")
-    insta_password = parsed_args.insta_password or os.environ.get("INSTA_PASSWORD")
-    calendar_user = parsed_args.calendar_user or os.environ.get("CALENDAR_USER")
-    calendar_password = parsed_args.calendar_password or os.environ.get(
-        "CALENDAR_PASSWORD"
-    )
-
     init_media_handler(
-        parsed_args.insta_download_path,
-        parsed_args.insta_target_user,
+        insta_cache_path,
+        insta_target_user,
         insta_user,
         insta_password,
-        update_interval=parsed_args.update_interval,
-        no_auto_update=True,
+        update_interval=update_interval_td,
     )
     calendar = RemoteCal(
         user=calendar_user,
         password=calendar_password,
-        url=parsed_args.calendar_url,
-        calendar_name=parsed_args.calendar_name,
+        url=calendar_url,
+        calendar_name=calendar_name,
     )
 
     def on_new_photo(photo: DownloadedPhoto):
+        events = []
         try:
             events = extractor.extract(photo.path)
-            get_media_handler().mark_photo_as_processed(photo)
         except Exception as error:
             print(f"Unable do proccess {photo.path}: {error}")
 

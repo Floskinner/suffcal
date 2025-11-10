@@ -88,7 +88,7 @@ class Extractor:
     def __init__(
         self,
         repo_id: str = "TheBloke/CapybaraHermes-2.5-Mistral-7B-GGUF",
-        repo_files: List[str] = ["capybarahermes-2.5-mistral-7b.Q4_K_M.gguf"],
+        repo_files: List[Path] = [Path("capybarahermes-2.5-mistral-7b.Q4_K_M.gguf")],
         mistral_models_folder: Path = Path.home() / ".cache" / "mistral_models",
         chat_format="llama-2",
         text_recognition_model_name="en_PP-OCRv4_mobile_rec",
@@ -96,7 +96,7 @@ class Extractor:
     ):
         self.repo_id = repo_id
         self.repo_files = repo_files
-        self.mistral_models_folder = mistral_models_folder
+        self.mistral_models_folder = Path(mistral_models_folder)
         self.chat_format = chat_format
         self.text_recognition_model_name = text_recognition_model_name
         self.ocr_lang = ocr_lang
