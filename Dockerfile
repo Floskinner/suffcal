@@ -3,6 +3,8 @@ COPY --from=docker.io/astral/uv:0.9.8 /uv /uvx /bin/
 
 ENV PATH="/app/.venv/bin:${PATH}"
 ENV PADDLE_OCR_BASE_DIR="/app/downloads/models/paddle_ocr"
+ENV MODEL_CACHE_PATH="/app/downloads/models"
+ENV INSTA_CACHE_PATH="/app/downloads/instagram"
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y \
@@ -19,4 +21,4 @@ RUN mkdir -p /app/downloads/models /app/downloads/instagram
 
 VOLUME [ "/app/downloads" ]
 
-CMD ["suffcal", "--help" ]
+CMD ["suffcal"]
