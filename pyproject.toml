@@ -15,7 +15,7 @@ dependencies = [
     # Force CPU-only PyTorch stack (avoid pulling CUDA wheels via transitive deps)
     # Pin torch/torchvision with +cpu build tags to prevent GPU variant resolution.
     # NOTE: uv respects index mapping below; explicit spec ensures smaller footprint.
-    "torch==2.9+cpu",
+    "torch==2.9.1",
     "transformers>=4.56.2",
 ]
 
