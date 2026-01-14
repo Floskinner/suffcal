@@ -1,4 +1,4 @@
-FROM python:3.13
+FROM python:3.14
 COPY --from=docker.io/astral/uv:0.9.8 /uv /uvx /bin/
 
 ENV PATH="/app/.venv/bin:${PATH}"
